@@ -41,6 +41,37 @@ jobs:
             const script = require('./github-actions/trigger-issue/add-missing-labels-to-issues/post-labels-comment.js')
             script({g: github, c:context}, results)
 
+  #Fetch members of the "website-write" team and filter maintainer role          
+  Fetch-And-Filter-Team-Members:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch and filter team members
+        id: fetch-filter-team-members
+        run: |
+          const { HttpClient } = require('@actions/http-client');
+          const token = process.env.GITHUB_TOKEN;
+          const org = 'hackforla';
+          const teamSlug = 'website-write';
+
+          const http = new HttpClient('my-action');
+
+          const response = await http.get(`https://api.github.com/orgs/${org}/teams/${teamSlug}/members`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          const members = await response.readBody();
+          console.log(members);
+
+          const maintainers = members.filter(member => member.role === 'maintainer');
+          console.log(maintainers);
+
+          core.setOutput('team-members', members);
+          core.setOutput('maintainers', maintainers);
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  
   #Asking for preliminary update when issue is assigned
   Ask-For-Preliminary-update:
     runs-on: ubuntu-latest
@@ -68,5 +99,5 @@ jobs:
           script: |
             const results = ${{ steps.check-labels-prelim.outputs.result }}
             const script = require('./github-actions/trigger-issue/add-preliminary-comment/preliminary-update-comment.js')
-            script({g: github, c:context},results)
+            script({g: github, c:context}, results, maintainers)
 

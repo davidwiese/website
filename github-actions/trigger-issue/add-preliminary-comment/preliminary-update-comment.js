@@ -70,21 +70,35 @@ async function main({ g, c }, { shouldPost, issueNum }){
  * @returns an Array of issue numbers assigned to the developer
  */
 
-async function checkAssignedIssues() {
-  var issueAssignee = context.payload.issue.assignee.login
-  // Need to implement this function to fetch and check the assigned issues for the developer.
-  // Use the GitHub REST API to retrieve the list of issues assigned to the developer.
-  // Example:
-  // const assignedIssuesResponse = await github.rest.issues.listForAuthenticatedUser({
-  //   filter: 'assigned',
-  // });
-  // Extract issue numbers from the response and return them in an array.
-  // Replace the code below with your implementation.
-  return [];
-  // Once this is working, figure out the other filters like should not look at any of the dev's closed issues
-  // should exclude any issues with label Complexity: Prework or prework
+async function checkAssignedIssues(developerLogin, maintainers) {
+  try {
+    const assignedIssuesResponse = await github.rest.issues.listForAuthenticatedUser({
+      filter: 'assigned',
+      state: 'open',
+    });
+
+    const excludedLabels = ['Complexity: Prework', 'prework']
+
+    const filteredIssues = assignedIssuesResponse.data.filter((issue) => {
+      for (const label of issue.labels) {
+        if (excludedLabels.includes(label.name)) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    const filteredIssuesWithoutMaintainers = filteredIssues.filter((issue) => {
+      return !maintainers.includes(issue.assignee.login);
+    });
+
+    return filteredIssuesWithoutMaintainers.map((issue) => issue.number)
+  } catch (error) {
+    console.error(error);
+    return [];
   // should exclude any devs with a status of "role:maintainer" on the website-write team
   // should exclude any issues in the following columns: "Emergent Requests" "New Issue Approval"
+  }
 }
 
 
