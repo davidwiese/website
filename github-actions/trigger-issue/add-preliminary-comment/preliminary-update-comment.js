@@ -70,7 +70,8 @@ async function main({ g, c }, { shouldPost, issueNum }){
  * @returns an Array of issue numbers assigned to the developer
  */
 
-async function checkAssignedIssues(developerLogin) {
+async function checkAssignedIssues() {
+  var issueAssignee = context.payload.issue.assignee.login
   // Need to implement this function to fetch and check the assigned issues for the developer.
   // Use the GitHub REST API to retrieve the list of issues assigned to the developer.
   // Example:
@@ -97,7 +98,8 @@ async function makeComment(){
   var issueAssignee = context.payload.issue.assignee.login
   const eventdescriptions = await getTimeline(context.payload.issue.number)
   console.log(eventdescriptions.length)
-  //adding the code to find out the latest person assigned the issue
+  
+  // Adding the code to find out the latest person assigned the issue
   for(var i = eventdescriptions.length - 1 ; i>=0; i-=1){
     if(eventdescriptions[i].event == 'assigned'){
       issueAssignee = eventdescriptions[i].assignee.login
@@ -105,11 +107,15 @@ async function makeComment(){
     }
   }
 
+  // Check assigned issues for developer
+  const assignedIssues = await checkAssignedIssues(issueAssignee)
 
   const commentObject = {
     replacementString: issueAssignee,
     placeholderString: '${issueAssignee}',
-    filePathToFormat: './github-actions/trigger-issue/add-preliminary-comment/preliminary-update.md',
+    filePathToFormat: assignedIssues.length > 1
+      ? './github-actions/trigger-issue/add-preliminary-comment/multiple-issues-reminder.md'
+      : './github-actions/trigger-issue/add-preliminary-comment/preliminary-update.md',
     textToFormat: null
   }
 
