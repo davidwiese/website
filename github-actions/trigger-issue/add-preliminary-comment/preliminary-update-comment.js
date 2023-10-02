@@ -31,7 +31,7 @@ async function main({ g, c }, { shouldPost, issueNum }){
 }
 
 /**
- * Function that returns the timeline of an issue.
+ * Function that checks developer's
  * @param {Number} issueNum the issue's number 
  * @returns an Array of Objects containing the issue's timeline of events
  */
@@ -63,6 +63,29 @@ async function main({ g, c }, { shouldPost, issueNum }){
   }
 	return history
 }
+
+/**
+ * Function that checks if developer has multiple issues assigned
+ * @param {String} developerLogin - the login of the developer
+ * @returns an Array of issue numbers assigned to the developer
+ */
+
+async function checkAssignedIssues(developerLogin) {
+  // Need to implement this function to fetch and check the assigned issues for the developer.
+  // Use the GitHub REST API to retrieve the list of issues assigned to the developer.
+  // Example:
+  // const assignedIssuesResponse = await github.rest.issues.listForAuthenticatedUser({
+  //   filter: 'assigned',
+  // });
+  // Extract issue numbers from the response and return them in an array.
+  // Replace the code below with your implementation.
+  return [];
+  // Once this is working, figure out the other filters like should not look at any of the dev's closed issues
+  // should exclude any issues with label Complexity: Prework or prework
+  // should exclude any devs with a status of "role:maintainer" on the website-write team
+  // should exclude any issues in the following columns: "Emergent Requests" "New Issue Approval"
+}
+
 
 /**
  * @description - This function makes the comment with the issue assignee's github handle using the raw preliminary.md file
